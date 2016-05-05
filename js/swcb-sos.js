@@ -103,7 +103,7 @@ var request = function(){
     this.name = getValueById("offeringID");
     this.property = getValueById("property");
     this.range = [getValueById("startTime"), getValueById("endTime")];
-    this.output = bodyMessage(this.name, this.range, this.property);
+    this.output = bodyMessage(this.name, this.property, this.range);
 }
 
 function doGetObservation() {
@@ -112,22 +112,19 @@ function doGetObservation() {
 	// document.getElementById("container").innerHTML = '';
 	// document.getElementById("describesensor").innerHTML = '';
     
-    request = new request();
+    var packet = new request();
+    var xmlRequest = $.ajax({
+        url: packet.url,
+        type: 'POST',
+        contentType: 'text/xml',
+        data: packet.output,
+        dataType: 'xml',
+        success: handleResponse
+    });
+}
 
-    var xmlhttp;
-    if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-        xmlhttp = new XMLHttpRequest();
-    } else { // code for IE6, IE5
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    }
-    xmlhttp.open("POST", sosURL, true);
-    xmlhttp.setRequestHeader("Content-type", "application/xml");
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            doGetObservationHandler(xmlhttp);
-        }
-    }
-    xmlhttp.send(bodyMessage);
+var handleResponse = function(data){
+    console.log(data);
 }
 
 function doGetObservationHandler(xmlhttp) {
