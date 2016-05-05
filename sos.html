@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SOS</title>
+    <meta charset="UTF-8" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+	<script type="text/javascript" src="http://api.tgos.nat.gov.tw/TGOS_API/tgos?ver=2&AppID=jsQd5cZYrT+o/4aTN1kTTHsQoNHFMWxacSZ3zgiIWNro+dilR/dC8w==&APIKey=cGEErDNy5yN/1fQ0vyTOZrghjE+jIU6ubRXixv29QoWkc/agTxC5zD7Ib/9YSh6m679CbIXsVnkV3erqSOygiLuahd+mJ8ezGzNpdqRlaUKVAzBrCff40cuMpQpE+ldTYlpGkeKJflkq+BCGmTT5Uq6QAMDYu9vmQFRSfgg/hXT6lcd+z7RDgm8oiW8HjIrUdE+OHh5o52uYNtK2v7TcnNI5xD6IVTy2t+XvC5yvg9GpbVXDQaAnQjoj2WKmvEBdy8pDq+MIfbbEJ0nIhbXbWrQi5eMIe1dJLZ5JThjo3ikSF6CIh2x/f+ZJyok0+8mo/Dwp9VynbSyH/ASqiZch2IoQjADOGWKaaFdv+Ofh2Hs=" charset="utf-8"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript" src="js/swcb-sos.js"></script>
+    <script type="text/javascript" src="js/listener.js"></script>
+    <script type="text/javascript" src="js/template.js"></script>
+    <style>
+        div.pos_fixed {
+            position: absolute;
+            top: 9%;
+            left: 10%;
+        }
+        
+        div.pos_fixed2 {
+            position: absolute;
+            top: 9%;
+            right: 30%;
+        }
+        
+        div.pos_fixed3 {
+            position: absolute;
+            top: 60%;
+            left: 20%;
+        }
+        
+        div.pos_fixed4 {
+            position: absolute;
+            top: 65%;
+            left: 5%;
+        }
+    </style>
+    <!-- TODO: You need to load the HighChart JavaScript library (and the jQuery library) -->
+</head>
+
+<body onload="loadMap()">
+    <script src="js/bootstrap.min.js"></script>
+    <h1 class="text-center"><strong><font face="微軟正黑體">國土資訊系統資料標準制度服務案</font></strong></h1>
+    <div class="container">
+        <div class="col-sm-4" id="TGMap" style="width: 50%; height: 500px"></div>
+        <div class="col-sm-4">
+            <form class="form-horizontal">
+				<div class="control-group">
+                    <label class="control-label">sosURL:</label>
+                    <div class="controls">
+                        <select onChange="getcapabilities(this.options[this.selectedIndex].value)" class="form-control" id="sosURL">
+							<option>Please select a URL</option>
+                            <option value="http://140.115.111.186:8080/swcb-sos-new/service">http://140.115.111.186:8080/swcb-sos-new/service</option>
+							<option value="http://140.115.111.186:8080/epa-sos/service">http://140.115.111.186:8080/epa-sos/service</option>
+                            <option value="http://localhost:8080/swcb_cctv/service">http://localhost:8080/swcb-sos/service</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">offeringID:</label>
+                    <div class="controls">
+                        <select onChange="ChangeOfferingInfo(this.options[this.selectedIndex].value)" class="form-control" id="offeringID">
+							<option>Please select an offering</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword">property:</label>
+                    <div class="controls">
+                        <select class="form-control" id="property">
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group time">
+                    <label class="control-label" for="inputPassword">startTime:</label>
+                    <div class="controls">
+                        <input size="50" type="text" id="startTime" value="startTime">
+                    </div>
+                </div>
+                <div class="control-group time">
+                    <label class="control-label" for="inputPassword">endTime:</label>
+                    <div class="controls">
+                        <input size="50" type="text" id="endTime" value="endTime">
+                    </div>
+                </div>
+            </form>
+            <br />
+            <button class="btn btn-large btn-primary" type="button" onClick="doGetObservation()">GetObservation</button>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" id="container" style="width: 60%; height: 60%"></div>
+        <div class="col-xs-2" id="resultTable" style="width: 30%"></div>
+    </div>
+	<div id="describesensor"></div>
+</body>
+
+</html>
