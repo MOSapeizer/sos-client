@@ -4,15 +4,8 @@ var readingArray = []; // this object stores the Reading objects (value) based o
 var offeringGroup = [];
 var xml;
 
-var pinIcon = L.icon({
-    iconUrl: 'https://cdn2.iconfinder.com/data/icons/iconslandgps/PNG/256x256/Pinpoints/NeedleLeftYellow.png',
-    iconSize: [64, 64],
-    iconAnchor: [32, 64],
-    popupAnchor: [-18, -42]
-});
-
-//A class called Reading
-function Reading(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, observationArray) {
+// A class called Reading
+var Reading = function(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, observationArray) {
     this.foiName = foiName;
     this.lat = lat;
     this.lon = lon;
@@ -23,11 +16,30 @@ function Reading(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, obser
     this.observationArray = observationArray; // this variable directly store the input data for the HighChart.js
 }
 
-function loadMap() {
-    pOMap = document.getElementById("TGMap");
-    pMap = new TGOS.TGOnlineMap(pOMap, TGOS.TGCoordSys.EPSG3857);
-    //addMarker();
+var request = function(){
+    this.url = getValueById("sosURL");
+    this.name = getValueById("offeringID");
+    this.property = getValueById("property");
+    this.range = [getValueById("startTime"), getValueById("endTime")];
+    this.output = getObservationXML(this.name, this.property, this.range);
+    this.getFeatureOfInterest = getFeatureOfInterest;
 }
+
+var Offering = function(request){
+    this.request = request;
+    this.observations = [];
+    this.feature = {};
+    this.addMarker = addMarker;
+}
+
+var Observation = function(xml){
+    this.phenomenonTime = xml.find("timePosition").text();
+    this.feature = xml.find("featureOfInterest").attr("xlink:href");
+    this.result = xml.find("result").text();
+    this.xml = xml;
+}
+
+
 
 function getcapabilities(url) {
 	var xmlhttp;
@@ -41,13 +53,14 @@ function getcapabilities(url) {
 	xmlhttp.send();
 }
 
-handler = function() {
+
+var handler = function() {
     if (this.readyState == 4 && this.status == 200){
         parseCapabilities(this.responseText);
     }
 };
 
-function xmlParser(response){
+var xmlParser = function(response){
     xmlDoc = $.parseXML( response );
     return $(xmlDoc);
 }
@@ -68,7 +81,7 @@ var getSelectedValue = function(name){
     return $("#" + name).children().first().text();
 }
 
-function parseCapabilities(xmlString) {
+var parseCapabilities = function(xmlString) {
     xml = xmlParser( xmlString );
     var offering = xml.find("Operation[name='GetObservation']")
                   .find("Parameter[name='offering']")
@@ -79,11 +92,11 @@ function parseCapabilities(xmlString) {
     ChangeOfferingInfo( offering_name );
 }
 
-function show(tag){
+var show = function(tag){
     $("." + tag).css("display", "block");
 }
 
-function hide(tag){
+var hide = function(tag){
     $("." + tag).css("display", "none");
 }
 
@@ -99,33 +112,7 @@ var getValueById = function(name){
     return document.getElementById(name).value;
 }
 
-var request = function(){
-    this.url = getValueById("sosURL");
-    this.name = getValueById("offeringID");
-    this.property = getValueById("property");
-    this.range = [getValueById("startTime"), getValueById("endTime")];
-    this.output = getObservationXML(this.name, this.property, this.range);
-    this.getFeatureOfInterest = getFeatureOfInterest;
-}
-
-var Offering = function(request){
-    this.request = request;
-    this.observations = [];
-}
-
-var Observation = function(xml){
-    this.phenomenonTime = xml.find("timePosition").text();
-    this.feature = xml.find("featureOfInterest").attr("xlink:href");
-    this.result = xml.find("result").text();
-    this.xml = xml;
-}
-
-function doGetObservation() {
-    // I dont know what was cleaned
-	// document.getElementById("resultTable").innerHTML = '';
-	// document.getElementById("container").innerHTML = '';
-	// document.getElementById("describesensor").innerHTML = '';
-    
+var doGetObservation = function() {
     var packet = new request();
     var offering = new Offering(packet);
     var xmlRequest = $.ajax({
@@ -133,12 +120,43 @@ function doGetObservation() {
         type: 'POST',
         contentType: 'text/xml',
         data: packet.output,
+        async: true,
         dataType: 'xml',
         success: handleResponse,
         cache: packet,
         offering: offering
     });
+}
 
+var getOfferingLocation = function(offering, feature){
+    if( offering["feature"].location === undefined ){
+        offering["request"].output = getFeatureOfInterest( feature );
+        doGetFeatureOfInterest( offering );
+    }
+}
+
+var doGetFeatureOfInterest = function(offering){
+    packet = offering.request;
+    var xmlRequest = $.ajax({
+        url: packet.url,
+        type: 'POST',
+        contentType: 'text/xml',
+        async: false,
+        data: packet.output,
+        dataType: 'xml',
+        offering: offering,
+        success: addFeatureLoaction
+    });
+}
+
+var addFeatureLoaction = function(featureOfInterest){
+    var offering = this.offering;
+    var position = $(featureOfInterest).find("pos")
+    offering["feature"].location = parse_position( position.text() );
+}
+
+var parse_position = function(position){
+    return position.split(" ");
 }
 
 var handleResponse = function(observation){
@@ -150,15 +168,7 @@ var handleResponse = function(observation){
     });
 
     offeringGroup.push( offering );
-}
-
-var addOnLocation = function(data){
-    offering = this.offering;
-    offering.location = parse_position( $(data).find("pos") );
-}
-
-var parse_position = function(position){
-    return position.split(" ");
+    offering.addMarker();
 }
 
 function doGetObservationHandler(xmlhttp) {
@@ -236,7 +246,7 @@ function parseGetObservationResponse(xmlDoc) {
     var reading = new Reading(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, observationArray); // this uses the predefined "Reading" class to create a "reading" object (object-oriented)
     readingArray[foiName] = reading; // here insert/update a key-value pair in the global variable "readingArray", where the key is the FeatureOfInterest name, and the value is the "reading" object created in the previous line
 
-    addMarker(foiName); // after parsing all the observations, we can now overlay the data on the map
+    OldAddMarker(foiName); // after parsing all the observations, we can now overlay the data on the map
 	
     //showtable(propertyURN,member.length,observationArray);
 	drawChart(foiName);
@@ -260,7 +270,7 @@ function showtable(propertyURN,memberlength,observationArray){
 
 var messageBox = null;
 
-function addMarker(foiName) {
+function OldAddMarker(foiName) {
 	
     //for (foiName in readingArray) { // access all the keys in the global variable "readingArray"
         var point = null;
