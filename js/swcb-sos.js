@@ -1,6 +1,8 @@
 ﻿var pOMap = null;
 var pMap = null;
 var readingArray = []; // this object stores the Reading objects (value) based on each FeatureOfInterest (key)
+var offeringGroup = [];
+var xml;
 
 var pinIcon = L.icon({
     iconUrl: 'https://cdn2.iconfinder.com/data/icons/iconslandgps/PNG/256x256/Pinpoints/NeedleLeftYellow.png',
@@ -23,7 +25,6 @@ function Reading(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, obser
 
 function loadMap() {
     pOMap = document.getElementById("TGMap");
-
     pMap = new TGOS.TGOnlineMap(pOMap, TGOS.TGCoordSys.EPSG3857);
     //addMarker();
 }
@@ -69,7 +70,7 @@ var getSelectedValue = function(name){
 
 function parseCapabilities(xmlString) {
     xml = xmlParser( xmlString );
-    offering = xml.find("Operation[name='GetObservation']")
+    var offering = xml.find("Operation[name='GetObservation']")
                   .find("Parameter[name='offering']")
                   .find("Value");;
 
@@ -103,7 +104,20 @@ var request = function(){
     this.name = getValueById("offeringID");
     this.property = getValueById("property");
     this.range = [getValueById("startTime"), getValueById("endTime")];
-    this.output = bodyMessage(this.name, this.property, this.range);
+    this.output = getObservationXML(this.name, this.property, this.range);
+    this.getFeatureOfInterest = getFeatureOfInterest;
+}
+
+var Offering = function(request){
+    this.request = request;
+    this.observations = [];
+}
+
+var Observation = function(xml){
+    this.phenomenonTime = xml.find("timePosition").text();
+    this.feature = xml.find("featureOfInterest").attr("xlink:href");
+    this.result = xml.find("result").text();
+    this.xml = xml;
 }
 
 function doGetObservation() {
@@ -113,28 +127,45 @@ function doGetObservation() {
 	// document.getElementById("describesensor").innerHTML = '';
     
     var packet = new request();
+    var offering = new Offering(packet);
     var xmlRequest = $.ajax({
         url: packet.url,
         type: 'POST',
         contentType: 'text/xml',
         data: packet.output,
         dataType: 'xml',
-        success: handleResponse
+        success: handleResponse,
+        cache: packet,
+        offering: offering
     });
+
 }
 
-var handleResponse = function(data){
-    console.log(data);
+var handleResponse = function(observation){
+    var packet = this.cache;
+    var offering = this.offering
+    $(observation).each(function(index, element){
+        var observation  = new Observation( $(element) );
+        offering.observations.push( observation );
+    });
+
+    offeringGroup.push( offering );
+}
+
+var addOnLocation = function(data){
+    offering = this.offering;
+    offering.location = parse_position( $(data).find("pos") );
+}
+
+var parse_position = function(position){
+    return position.split(" ");
 }
 
 function doGetObservationHandler(xmlhttp) {
-
-
     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) { // if the request is successful
         if (xmlhttp.responseText.indexOf('exception') == -1) { // if the SOS response is not an error (the response does not contain the 'exception' string)
 
             txt = xmlhttp.responseText;
-            console.log(txt);
             if (window.DOMParser) {
                 parser = new DOMParser();
                 xmlDoc = parser.parseFromString(txt, "text/xml");
