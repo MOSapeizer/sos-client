@@ -20,27 +20,56 @@ var addCctvMarker = function(){
 	var location = this["feature"].location;
 	var observation = this.observations[0];
 	var mark = addCameraMarker(observation.feature, location[0], location[1]);
-	var cctv_box = messageBoxFactory(observation.feature, location, observation.result);
+	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/);
+	if( cctv_id != null ){
+		var cctv_obj = new CCTVObject(cctv_id[1], cctv_id[2]);
+		var cctv_box = messageBoxFactory(cctv_id[1], observation.feature, location, observation.result);
+	} else {
+		var cctv_box = messageBoxFactory("live-html", observation.feature, location, observation.result);
+	}
 	markerArrary.push(mark);
 	messageBoxArray.push( cctv_box );
-	TGOS.TGEvent.addListener(mark, "click", function(){
+	CCTVObjectGroup.push( cctv_obj );
 
-		// so much dependencies
+	if( cctv_id != null )
+		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV);
+	else {
+		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV);
+	}
+
+	function inSiteCCTV(){
 		cctv_box.open(pMap);
 		var box = $(cctv_box.getElement());
-		box.height("1em");
 		box.next().hide();
+		box.find("p").css("margin", "8px");
+		box.find("p > span").css("position", "absolute")
+							.css("left", "1em")
+							.css("color", "red");
+		cctv_obj.play();
+	}
+
+	function linkOfCCTV(){
+		cctv_box.open(pMap);
+		var box = $(cctv_box.getElement());
+		box.next().hide();
+		box.height("1em");
 		box.find("div").css("height", "1.5em");
-	});
+	}
 }
 
-var messageBoxFactory = function(name, location, result){ 
-	var InfoWindowOptions = { maxWidth: 380,
+var messageBoxFactory = function(id, name, location, result){ 
+	var InfoWindowOptions = { maxWidth: 200,
 							  pixelOffset: new TGOS.TGSize(-60, 0),
 							  zIndex: 0 };
-	var mBox = new TGOS.TGInfoWindow('<a href=\"' + result + '\">' + name + '</a>',
+	if( id != "live-html" ){
+		var mBox = new TGOS.TGInfoWindow(show_cctv(id, "2016-05-06 00:00:00"),
 				 new TGOS.TGPoint(location[0], location[1]),
 				 InfoWindowOptions);
+	} else {
+		var mBox = new TGOS.TGInfoWindow('<a href="' + result + '">' + name + '</a>',
+				 new TGOS.TGPoint(location[0], location[1]),
+				 InfoWindowOptions);
+	}
 	return mBox; 
 }
 

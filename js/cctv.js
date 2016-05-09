@@ -6,8 +6,14 @@ var myTimer = function() {
     // window.clearInterval(timerVariable)
 }
 
-var set_cctv_image = function(index){
-	$("#cctv img").attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index )
+var show_cctv = function(id, timestamp){
+	return '<img id="' + id + '" src="http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=13819687" width="200" height="200" alt="">'
+		   + "<span>" + timestamp + "<span>"
+}
+
+var update_cctv = function(id, index, timestamp){
+	$("#" + id).attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index )
+	$("#" + id).next().text( timestamp );
 }
 
 var cctv = function(station_id, ccd_id){
@@ -25,16 +31,16 @@ var cctv = function(station_id, ccd_id){
 			// concat cctv_index with old list and make it unique;
 			cctv_obj.images = cctv_obj.images.concat(cctv_index);
 			cctv_obj.times = cctv_obj.times.concat(cctv_times);
-			$.unique( cctv_obj.images );
-			$.unique( cctv_obj.times );
+			$.unique( cctv_obj.images.sort() );
+			$.unique( cctv_obj.times.sort() );
 		}
 	});
 }
 
-var CCTVObject = function(url){
+var CCTVObject = function(station_id, ccd_id){
 	this.index = 0;
-	this.station_id = 21;
-	this.ccd_id = 1;
+	this.station_id = station_id;
+	this.ccd_id = ccd_id;
 	this.images = [];
 	this.times = [];
 	this.play = function(){
@@ -57,9 +63,11 @@ var CCTVObject = function(url){
 		if(this.images.length > 0){
 			if( this.index >= this.images.length )
 				this.index = 0;
+			timestamp = this.times[this.index];
 			image = this.images[this.index++];
-			console.log(image); 
-			set_cctv_image( image );
+			// console.log(this.index);
+			// console.log(image); 
+			update_cctv( this.station_id, image, timestamp );
 		}
 	}
 }
