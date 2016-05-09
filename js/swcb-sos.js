@@ -3,12 +3,45 @@ var pMap = null;
 var readingArray = []; // this object stores the Reading objects (value) based on each FeatureOfInterest (key)
 var offeringGroup = [];
 var xml;
+var hostname_regex = /localhost|127(?:\.[0-9]+){0,2}\.[0-9]+/;
+var URL = [ "http://140.115.111.186:8080/swcb-sos-new/service", 
+            "http://140.115.111.186:8080/epa-sos/service", 
+            "http://localhost:8080/swcb_cctv/service"]
+
+var UrlForCapability = function( url ) {
+    var url_for_getCapability = url + "?service=SOS&request=GetCapabilities";
+    if( url.match( hostname_regex ) === null )
+        return UrlForGetYQL( url_for_getCapability );
+    return url_for_getCapability;
+}
+
+var UrlForObservation = function( url, body ) {
+    if( url.match( hostname_regex ) === null )
+        return UrlForPostYQL( url, body );
+    return url;
+}
+
+var UrlForFeatrueOfInterest = function( url, body ){
+    return UrlForObservation(url, body);
+}
+
+var UrlForGetYQL = function(url){
+    return "http://query.yahooapis.com/v1/public/yql?q=" 
+           + encodeURIComponent("select * from xml where url='" + url + "'")
+           + '&diagnostics=true&env=store://datatables.org/alltableswithkeys';
+}
+
+var UrlForPostYQL = function(url, body){
+    return "http://query.yahooapis.com/v1/public/yql?q="
+           + encodeURIComponent("select * from xmlpost where url='" + url + "'")
+           + encodeURIComponent("and postdata=\'" + body + "\'")
+           + '&diagnostics=true&env=store://datatables.org/alltableswithkeys';
+}
 
 // A class called Reading
 var Reading = function(foiName, lat, lon, propertyURN, uom, lastTime, lastValue, observationArray) {
     this.foiName = foiName;
     this.lat = lat;
-    this.lon = lon;
     this.propertyURN = propertyURN;
     this.uom = uom;
     this.lastTime = lastTime;
@@ -17,7 +50,7 @@ var Reading = function(foiName, lat, lon, propertyURN, uom, lastTime, lastValue,
 }
 
 var request = function(){
-    this.url = getValueById("sosURL");
+    this.url = URL[ getValueById("sosURL") ];
     this.name = getValueById("offeringID");
     this.property = getValueById("property");
     this.range = [getValueById("startTime"), getValueById("endTime")];
@@ -26,10 +59,11 @@ var request = function(){
 }
 
 var Offering = function(request){
+    this.name = request.url;
     this.request = request;
     this.observations = [];
     this.feature = {};
-    this.addMarker = addMarker;
+    this.callback;
 }
 
 var Observation = function(xml){
@@ -40,19 +74,17 @@ var Observation = function(xml){
 }
 
 
-
-function getcapabilities(url) {
+function getcapabilities(index) {
 	var xmlhttp;
 	if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 	   xmlhttp = new XMLHttpRequest();
 	} else {// code for IE6, IE5
 	   xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 	}
-	xmlhttp.open("GET",url+"?service=SOS&request=GetCapabilities",true);
+	xmlhttp.open("GET", UrlForCapability( URL[index] ), true);
     xmlhttp.onreadystatechange = handler
 	xmlhttp.send();
 }
-
 
 var handler = function() {
     if (this.readyState == 4 && this.status == 200){
@@ -115,17 +147,36 @@ var getValueById = function(name){
 var doGetObservation = function() {
     var packet = new request();
     var offering = new Offering(packet);
-    var xmlRequest = $.ajax({
-        url: packet.url,
-        type: 'POST',
-        contentType: 'text/xml',
-        data: packet.output,
-        async: true,
-        dataType: 'xml',
-        success: handleResponse,
-        cache: packet,
-        offering: offering
+    var url = UrlForObservation( packet.url, packet.output );
+    var data = "";
+
+    // for not YQL, we need to put POST data in ajax;
+    if( url == packet.url )
+        data = packet.output;
+
+    xmlRequest(url, data, handleResponse, {offering: offering, packet: packet})
+
+}
+
+var handleResponse = function(observation){
+    var packet = this["cache"].packet;
+    var offering = this["cache"].offering
+
+    // Make each observation as an Object
+    // and Collect into a Offering.
+    $(observation).each(function(index, element){
+        var observation  = new Observation( $(element) );
+        offering.observations.push( observation );
     });
+
+    offeringGroup.push( offering );
+
+    if( offering.name == URL[2] ) {
+        addCctvMarker.bind( offering )();
+
+    } else {
+        console.log(offering);
+    }
 }
 
 var getOfferingLocation = function(offering, feature){
@@ -136,39 +187,39 @@ var getOfferingLocation = function(offering, feature){
 }
 
 var doGetFeatureOfInterest = function(offering){
-    packet = offering.request;
+    var packet = offering.request;
+    var url = UrlForFeatrueOfInterest( packet.url, packet.output );
+    var data = "";
+
+    // for not YQL, we need to put POST data in ajax;
+    if( url == packet.url )
+        data = packet.output;
+
+    xmlRequest(url, data, addFeatureLoaction, {offering: offering}, false);
+
+}
+
+var xmlRequest = function(url, data, callback, cache={}, async=true){
     var xmlRequest = $.ajax({
-        url: packet.url,
+        url: url,
         type: 'POST',
         contentType: 'text/xml',
-        async: false,
-        data: packet.output,
+        async: async,
+        data: data,
         dataType: 'xml',
-        offering: offering,
-        success: addFeatureLoaction
+        success: callback,
+        cache: cache
     });
 }
 
 var addFeatureLoaction = function(featureOfInterest){
-    var offering = this.offering;
+    var offering = this["cache"].offering;
     var position = $(featureOfInterest).find("pos")
     offering["feature"].location = parse_position( position.text() );
 }
 
 var parse_position = function(position){
     return position.split(" ");
-}
-
-var handleResponse = function(observation){
-    var packet = this.cache;
-    var offering = this.offering
-    $(observation).each(function(index, element){
-        var observation  = new Observation( $(element) );
-        offering.observations.push( observation );
-    });
-
-    offeringGroup.push( offering );
-    offering.addMarker();
 }
 
 function doGetObservationHandler(xmlhttp) {
@@ -266,9 +317,6 @@ function showtable(propertyURN,memberlength,observationArray){
     }
 	
 }
-
-
-var messageBox = null;
 
 function OldAddMarker(foiName) {
 	
