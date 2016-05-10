@@ -19,63 +19,98 @@ var addCctvMarker = function(){
 	}
 	var location = this["feature"].location;
 	var observation = this.observations[0];
-	var mark = addCameraMarker(observation.feature, location[0], location[1]);
-	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/);
-	if( cctv_id != null ){
-		var cctv_obj = new CCTVObject(cctv_id[1], cctv_id[2]);
-		var cctv_box = messageBoxFactory(cctv_id[1], observation.feature, location, observation.result);
-	} else {
-		var cctv_box = messageBoxFactory("live-html", observation.feature, location, observation.result);
-	}
-	markerArrary.push(mark);
-	messageBoxArray.push( cctv_box );
-	CCTVObjectGroup.push( cctv_obj );
+	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/) || [];
+	var cctv_box = createMessageBox( observation, location, cctv_id );
+	var cctv_mark = addCameraMarker(observation, location);
 
-	if( cctv_id != null )
-		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV);
+	markEventBinder( cctv_id, cctv_mark, cctv_box );
+	messageBoxArray.push( cctv_box );
+	markerArrary.push( cctv_mark );
+
+	
+}
+
+var markEventBinder = function(id, mark, caller) {
+	if( id != null ) {
+		var cctv_obj = new CCTVObject(id[1], id[2]);
+		CCTVObjectGroup.push( cctv_obj );
+		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV );
+	}
 	else {
-		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV);
+		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV );
 	}
 
 	function inSiteCCTV(){
-		cctv_box.open(pMap);
-		var box = $(cctv_box.getElement());
+		caller.open(pMap);
+		var box = $(caller.getElement());
+		console.log(box);
 		box.next().hide();
 		box.find("p").css("margin", "8px");
 		box.find("p > span").css("position", "absolute")
 							.css("left", "1em")
 							.css("color", "red");
-		cctv_obj.play();
+		if( cctv_obj.isPause )
+			cctv_obj.resume();
+		else {
+			cctv_obj.play();
+
+			//Because TGOS is sucks, so I have to implement this function myself. WTF.
+			var close_bottom = box.next().next();
+			close_bottom.click(function() {
+				cctv_obj.pause();
+			})
+		}
 	}
 
 	function linkOfCCTV(){
-		cctv_box.open(pMap);
-		var box = $(cctv_box.getElement());
+		caller.open(pMap);
+		var box = $(caller.getElement());
 		box.next().hide();
 		box.height("1em");
 		box.find("div").css("height", "1.5em");
 	}
 }
 
-var messageBoxFactory = function(id, name, location, result){ 
+var createMessageBox = function( observation, location, cctv_id=[] ) {
+	var message_options = new MessageOptionsFactory( { name: observation.feature, 
+												   location: location, 
+												   result: observation.result } )
+
+	message_options["type"] = cctv_id[1] || "live-html";
+	var cctv_box = messageBoxFactory( message_options );
+	return cctv_box;
+}
+
+var MessageOptionsFactory = function(options){ 
+	this.type = options.type || "";
+	this.name = options.name || "";
+	this.location = options.location || [];
+	this.result = options.result || "";
+}
+
+var messageBoxFactory = function( option ){ 
+
+	var message = '<a href="' + option.result + '">' + option.name + '</a>';
+
+	if( option.type != "live-html" )
+		return messageBoxInstance( show_cctv(option.type, "2016-05-06 00:00:00"), option.location );
+	
+	return messageBoxInstance( message, option.location );
+}
+
+var messageBoxInstance = function( message, location ){
 	var InfoWindowOptions = { maxWidth: 200,
 							  pixelOffset: new TGOS.TGSize(-60, 0),
 							  zIndex: 0 };
-	if( id != "live-html" ){
-		var mBox = new TGOS.TGInfoWindow(show_cctv(id, "2016-05-06 00:00:00"),
-				 new TGOS.TGPoint(location[0], location[1]),
-				 InfoWindowOptions);
-	} else {
-		var mBox = new TGOS.TGInfoWindow('<a href="' + result + '">' + name + '</a>',
-				 new TGOS.TGPoint(location[0], location[1]),
-				 InfoWindowOptions);
-	}
-	return mBox; 
+  	var mBox = new TGOS.TGInfoWindow( message
+  			   , new TGOS.TGPoint(location[0], location[1])
+  			   , InfoWindowOptions);
+  	return mBox
 }
 
-var addCameraMarker = function(id, lon, lat){
-	var markerPoint = new TGOS.TGPoint(lon, lat);
+var addCameraMarker = function(observation, location){
+	var markerPoint = new TGOS.TGPoint(location[0], location[1]);
 	var markerImg = new TGOS.TGImage("./image/Camera-marker.png",
 	                new TGOS.TGSize(32, 40), new TGOS.TGPoint(0, 0), new TGOS.TGPoint(0, 16));
-	return new TGOS.TGMarker(pMap, markerPoint, id, markerImg);
+	return new TGOS.TGMarker(pMap, markerPoint, observation.feature, markerImg);
 }

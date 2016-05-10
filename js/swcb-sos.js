@@ -3,10 +3,10 @@ var pMap = null;
 var readingArray = []; // this object stores the Reading objects (value) based on each FeatureOfInterest (key)
 var offeringGroup = [];
 var xml;
-var hostname_regex = /localhost|127(?:\.[0-9]+){0,2}\.[0-9]+/;
+var hostname_regex = /localhost|127(?:\.[0-9]+){0,2}\.[0-9]+|mos\.csrsr\.ncu\.edu\.tw:8080/;
 var URL = [ "http://140.115.111.186:8080/swcb-sos-new/service", 
             "http://140.115.111.186:8080/epa-sos/service", 
-            "http://localhost:8080/swcb_cctv/service"]
+            "http://mos.csrsr.ncu.edu.tw:8080/swcb_cctv/service"]
 
 var UrlForCapability = function( url ) {
     var url_for_getCapability = url + "?service=SOS&request=GetCapabilities";
@@ -17,7 +17,7 @@ var UrlForCapability = function( url ) {
 
 var UrlForObservation = function( url, body ) {
     if( url.match( hostname_regex ) === null )
-        return UrlForPostYQL( url, body );
+        return UrlForPostYQL( url, body.replace(/[\t\n]/g, " ").replace(/\"/g), "'");
     return url;
 }
 
@@ -33,8 +33,8 @@ var UrlForGetYQL = function(url){
 
 var UrlForPostYQL = function(url, body){
     return "http://query.yahooapis.com/v1/public/yql?q="
-           + encodeURIComponent("select * from xmlpost where url='" + url + "'")
-           + encodeURIComponent("and postdata=\'" + body + "\'")
+           + encodeURIComponent("select * from xmlpost where url='" + url + "' ")
+           + "and postdata=\"" + body + "\""
            + '&diagnostics=true&env=store://datatables.org/alltableswithkeys';
 }
 
@@ -172,7 +172,7 @@ var handleResponse = function(observation){
     offeringGroup.push( offering );
 
     if( offering.name == URL[2] ) {
-        addCctvMarker.bind( offering )();
+        addCctvMarker.call( offering );
 
     } else {
         console.log(offering);
@@ -181,7 +181,8 @@ var handleResponse = function(observation){
 
 var getOfferingLocation = function(offering, feature){
     if( offering["feature"].location === undefined ){
-        offering["request"].output = getFeatureOfInterest( feature );
+        offering["request"].output = getFeatureOfInterest( feature ).replace(/[\t\n]/g, " ");
+        // console.log(offering["request"].output);
         doGetFeatureOfInterest( offering );
     }
 }
