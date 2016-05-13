@@ -1,0 +1,57 @@
+html, body {
+    width: 100%;
+    height: 100%;
+
+}
+
+div .pos_fixed {
+    position: absolute;
+    top: 9%;
+    left: 10%;
+}
+
+div .pos_fixed2 {
+    position: absolute;
+    top: 9%;
+    right: 30%;
+}
+
+div .pos_fixed3 {
+    position: absolute;
+    top: 60%;
+    left: 20%;
+}
+
+div .pos_fixed4 {
+    position: absolute;
+    top: 65%;
+    left: 5%;
+}
+
+.header {
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 5px black;
+}
+
+.main, #TGMap {
+    width: 100%;
+    height: 100%;
+}
+
+#pLevelBarBar tbody table td {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 100%;
+}
+
+#pLevelBarBar tbody table td:active {
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 100%;
+}
+
+.control-block {
+    display: none;
+}

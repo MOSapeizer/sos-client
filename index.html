@@ -6,6 +6,7 @@
     <meta charset="UTF-8" />
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link rel="stylesheet" href="css/main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 	<script type="text/javascript" src="http://api.tgos.nat.gov.tw/TGOS_API/tgos?ver=2&AppID=jsQd5cZYrT+o/4aTN1kTTHsQoNHFMWxacSZ3zgiIWNro+dilR/dC8w==&APIKey=cGEErDNy5yN/1fQ0vyTOZrghjE+jIU6ubRXixv29QoWkc/agTxC5zD7Ib/9YSh6m679CbIXsVnkV3erqSOygiLuahd+mJ8ezGzNpdqRlaUKVAzBrCff40cuMpQpE+ldTYlpGkeKJflkq+BCGmTT5Uq6QAMDYu9vmQFRSfgg/hXT6lcd+z7RDgm8oiW8HjIrUdE+OHh5o52uYNtK2v7TcnNI5xD6IVTy2t+XvC5yvg9GpbVXDQaAnQjoj2WKmvEBdy8pDq+MIfbbEJ0nIhbXbWrQi5eMIe1dJLZ5JThjo3ikSF6CIh2x/f+ZJyok0+8mo/Dwp9VynbSyH/ASqiZch2IoQjADOGWKaaFdv+Ofh2Hs=" charset="utf-8"></script>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
@@ -18,42 +19,14 @@
     <script type="text/javascript" src="js/cctv.js"></script>
     <script type="text/javascript" src="js/CustomTGOS.js"></script>
 
-    <!-- solution for cross-domain request -->
-    <!-- <script type="text/javascript" src="js/xdomainajax.js"></script> -->
-    <style>
-        div.pos_fixed {
-            position: absolute;
-            top: 9%;
-            left: 10%;
-        }
-        
-        div.pos_fixed2 {
-            position: absolute;
-            top: 9%;
-            right: 30%;
-        }
-        
-        div.pos_fixed3 {
-            position: absolute;
-            top: 60%;
-            left: 20%;
-        }
-        
-        div.pos_fixed4 {
-            position: absolute;
-            top: 65%;
-            left: 5%;
-        }
-    </style>
-    <!-- TODO: You need to load the HighChart JavaScript library (and the jQuery library) -->
 </head>
 
 <body onload="loadMap()">
     <script src="js/bootstrap.min.js"></script>
-    <h1 class="text-center"><strong><font face="微軟正黑體">國土資訊系統資料標準制度服務案</font></strong></h1>
-    <div class="container">
-        <div class="col-sm-4" id="TGMap" style="width: 50%; height: 500px"></div>
-        <div class="col-sm-4">
+    <h1 class="header"><strong><font face="微軟正黑體">國土資訊系統資料標準制度服務案</font></strong></h1>
+    <div class="main">
+        <div class="content" id="TGMap" style="width: 100%; height: 100%"></div>
+        <div class="col-sm-4 control-block">
             <form class="form-horizontal">
 				<div class="control-group">
                     <label class="control-label">sosURL:</label>

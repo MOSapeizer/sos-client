@@ -11,6 +11,54 @@ var pinIcon = L.icon({
 var loadMap = function() {
     pOMap = document.getElementById("TGMap");
     pMap = new TGOS.TGOnlineMap(pOMap, TGOS.TGCoordSys.EPSG3857);
+
+    MapOptions = {
+		backgroundColor: "#888888",  //backgroundColor(設定地圖背景顏色)
+		disableDefaultUI: false,  //disableDefaultUI(是否關閉所有地圖物件)
+		scrollwheel: false,  //scrollwheel(是否允許使用者使用滑鼠滾輪縮放地圖)
+		mapTypeControl: false,  //mapTypeControl(是否開啟地圖類型控制項)
+		mapTypeControlOptions: {  //mapTypeControlOptions(指定提供的地圖類型)
+		mapTypeIds: [TGOS.TGMapTypeId.ROADMAP, TGOS.TGMapTypeId.F2IMAGE], 
+		//mapTypeId(設定地圖控制項中欲顯示之底圖圖磚類型按鈕
+		//上行範例只提供福衛混和地圖及福衛二號衛星影像兩類)
+		//若不設定則預設顯示所有類型的底圖圖磚按鈕供使用者切換
+		controlPosition: TGOS.TGControlPosition.RIGHT_TOP, 
+		//controlPosition(設定地圖類型控制項在地圖的位置)
+		mapTypeControlStyle: TGOS.TGMapTypeControlStyle.DROPDOWN_MENU 
+		//mapTypeControlstyle(設定地圖類型控制項樣式)
+		//(可設定參數有：DEFAULT / HORIZONTAL_BAR / DROPDOWN_MENU)
+		},
+		navigationControl: true,  //navigationControl(是否開啟縮放控制列)
+		navigationControlOptions: {  //navigationControlOptions(提供指定縮放控制列)
+		controlPosition: TGOS.TGControlPosition.RIGHT_CENTER, 
+		//controlPosition(設定縮放控制列在地圖的位置)
+		navigationControlStyle: TGOS.TGNavigationControlStyle.DEFAULT
+		//navigationControlStyle(設定縮放控制列樣式)
+		//(可設定參數有：完整版 / 縮小版(DEFAULT / SMALL))
+		},
+		scaleControl: false,  //scaleControl(是否開啟比例尺控制項)
+		// scaleControlOptions: {  //scaleControlOptions(提供指定比例尺控制項)
+		// 	controlPosition: TGOS.TGControlPosition.LEFT_BOTTOM 
+		// 	// controlPosition (設定比例尺控制項在地圖的位置)
+		// },
+		draggable:true,  //draggable(設定地圖是否可被拖曳)
+		keyboardShortcuts:false  //keyboardShortcuts(設定是否可用鍵盤控制地圖)
+		};
+	pMap.setOptions(MapOptions);
+	scrollbutton();
+}
+
+var scrollbutton = function(){
+	var bar = $("#pLevelBarBar");
+	bar.find("img[src='http://api.tgos.nat.gov.tw/TGOS_API/images//bar_head.png']")
+	   .attr("src", "image/plus.png");
+
+	bar.find("img[src='http://api.tgos.nat.gov.tw/TGOS_API/images//bar_bottom.png']")
+	   .attr("src", "image/minus.png")
+	   
+	bar.find("tr").css("margin", "0.5em");
+	bar.find("td").css("padding", "0px");
+	bar.find("img").css("width", "5em");
 }
 
 var addCctvMarker = function(){
