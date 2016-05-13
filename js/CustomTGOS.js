@@ -13,7 +13,7 @@ var loadMap = function() {
     pMap = new TGOS.TGOnlineMap(pOMap, TGOS.TGCoordSys.EPSG3857);
 
     MapOptions = {
-		backgroundColor: "#888888",  //backgroundColor(設定地圖背景顏色)
+		backgroundColor: "#000000",  //backgroundColor(設定地圖背景顏色)
 		disableDefaultUI: false,  //disableDefaultUI(是否關閉所有地圖物件)
 		scrollwheel: false,  //scrollwheel(是否允許使用者使用滑鼠滾輪縮放地圖)
 		mapTypeControl: false,  //mapTypeControl(是否開啟地圖類型控制項)
@@ -55,10 +55,9 @@ var scrollbutton = function(){
 
 	bar.find("img[src='http://api.tgos.nat.gov.tw/TGOS_API/images//bar_bottom.png']")
 	   .attr("src", "image/minus.png")
-	   
-	bar.find("tr").css("margin", "0.5em");
+
 	bar.find("td").css("padding", "0px");
-	bar.find("img").css("width", "5em");
+	bar.find("img").css("width", "3em");
 }
 
 var addCctvMarker = function(){

@@ -42,6 +42,12 @@ div .pos_fixed4 {
     height: 100%;
 }
 
+#pLevelBarBar {
+    top: 35% !important;
+    right: 2em !important;
+    height: 8em !important;
+}
+
 #pLevelBarBar tbody table td {
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 100%;
@@ -53,5 +59,22 @@ div .pos_fixed4 {
 }
 
 .control-block {
-    display: none;
+    position: absolute;
+    min-width: 256px;
+    width: 20%;
+    height: 50%;
+    top: 18%;
+    left: 2em;
+    padding: 2em;
+    border-radius: 2em;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.control-block input {
+    width: 100%;
+    text-align: center;
+}
+
+.control-block button {
+    width: 100%;
 }
