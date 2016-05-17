@@ -90,12 +90,14 @@ var markEventBinder = function(id, mark, caller) {
 	function inSiteCCTV(){
 		caller.open(pMap);
 		var box = $(caller.getElement());
-		console.log(box);
+		box.css("height", "255px");
 		box.next().hide();
-		box.find("p").css("margin", "8px");
+		box.find("p").css("margin", "0.5em 0 2em 0.5em");
 		box.find("p > span").css("position", "absolute")
 							.css("left", "1em")
-							.css("color", "red");
+							.css("bottom", "0em")
+							.css("color", "rgba(180, 0, 0, 0.8)");
+							// .css("text-shadow", "1px 1px 5px black");
 		if( cctv_obj.isPause )
 			cctv_obj.resume();
 		else {

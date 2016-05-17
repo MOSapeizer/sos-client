@@ -18,6 +18,7 @@
     <script type="text/javascript" src="js/template.js"></script>
     <script type="text/javascript" src="js/cctv.js"></script>
     <script type="text/javascript" src="js/CustomTGOS.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
 
 </head>
 
@@ -29,47 +30,49 @@
         <div class="col-sm-4 control-block">
             <form class="form-horizontal">
 				<div class="control-group">
-                    <label class="control-label">sosURL:</label>
+                    <label class="control-label">SOS:</label>
                     <div class="controls">
                         <select onChange="getcapabilities(this.options[this.selectedIndex].value)" class="form-control" id="sosURL">
-							<option>Please select a URL</option>
+							<option>Please Select A Service</option>
                             <option value="0">swcb-sos/</option>
-							<!-- <option value="1">epa-sos/service</option> -->
+							<option value="1">epa-sos/service</option>
                             <option value="2">swcb-sos/CCTV</option>
                         </select>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label">offeringID:</label>
+                    <label class="control-label">Offering:</label>
                     <div class="controls">
                         <select onChange="ChangeOfferingInfo(this.options[this.selectedIndex].value)" class="form-control" id="offeringID">
-							<option>Please select an offering</option>
+							<option>Please Select An Offering</option>
                         </select>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label" for="inputPassword">property:</label>
+                    <label class="control-label" for="inputPassword">Property:</label>
                     <div class="controls">
                         <select class="form-control" id="property">
                         </select>
                     </div>
                 </div>
                 <div class="control-group time">
-                    <label class="control-label" for="inputPassword">startTime:</label>
+                    <label class="control-label" for="inputPassword">Start Time:</label>
                     <div class="controls">
-                        <input size="50" type="text" id="startTime" placeholder="startTime">
+                        <input size="50" type="text" id="startTime" placeholder="start">
                     </div>
                 </div>
                 <div class="control-group time">
-                    <label class="control-label" for="inputPassword">endTime:</label>
+                    <label class="control-label" for="inputPassword">End Time:</label>
                     <div class="controls">
-                        <input size="50" type="text" id="endTime" placeholder="endTime">
+                        <input size="50" type="text" id="endTime" placeholder="end">
                     </div>
                 </div>
             </form>
             <br />
             <button class="btn btn-large btn-primary" type="button" onClick="doGetObservation()">GetObservation</button>
+            <div class="hide-control-button active"></div>
         </div>
+        <div class="show-control-button"></div>
     </div>
     <br />
     <div class="row">
