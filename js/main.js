@@ -17,5 +17,5 @@ var show_button = function(){
 
 var exchange_active = function(){
 	$(".hide-control-button").toggleClass("active");
-	$(".show-control-button").toggleClass("active active-show");
+	$(".show-control-button").toggleClass("active show-button-animate");
 }
