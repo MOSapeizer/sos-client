@@ -17,7 +17,7 @@ var update_cctv = function(id, index, timestamp){
 }
 
 var cctv = function(station_id, ccd_id){
-	cctv_obj = this;
+	var cctv_obj = this;
 	$.ajax({
 	    url: "http://swcb-cctv.herokuapp.com/cctv/" + station_id + "/" + ccd_id,
 	    type: 'GET',
