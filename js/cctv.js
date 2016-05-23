@@ -7,13 +7,14 @@ var myTimer = function() {
 }
 
 var show_cctv = function(id, timestamp){
-	return '<img id="' + id + '" src="http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=13819687" width="200" height="200" alt="">'
-		   + "<span>" + timestamp + "<span>"
+	return '<img id="' + id + '" src="image/CCTV.png" width="200" height="200" alt="">'
+		   + "<span>" + timestamp + "<span> ";
 }
 
 var update_cctv = function(id, index, timestamp){
-	$("#" + id).attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index )
-	$("#" + id).next().text( timestamp );
+	$("#" + id).attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index );
+	$("#" + id).nextAll().filter("span").text( timestamp );
+	// $("#" + id).nextAll().filter("button").text( "放大" );
 }
 
 var cctv = function(station_id, ccd_id){

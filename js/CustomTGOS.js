@@ -73,7 +73,6 @@ var addCctvMarker = function(){
 	markEventBinder( cctv_id, cctv_mark, cctv_box );
 	messageBoxArray.push( cctv_box );
 	markerArrary.push( cctv_mark );
-
 	
 }
 
