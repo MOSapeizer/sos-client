@@ -13525,7 +13525,7 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
         return e
     };
     this.open = function(a) {
-        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), a.getHPack().appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.anchor(), this.panToCenter())
+        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), e.appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.update(), this.panToCenter())
     };
     this.after_close = function(){ };
     this.close = function(fn=null) {
@@ -13552,7 +13552,7 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     };
     this.setZIndex = function(a) {
         a !== p.zIndex && (p.zIndex = a, e.style.zIndex =
-            a, k.style.zIndex = a, this.update(), TGOS.TGEvent.trigger(this, "zindex_changed"))
+            a, this.update(), TGOS.TGEvent.trigger(this, "zindex_changed"))
     };
     this.getZIndex = function() {
         return p.zIndex
@@ -13570,16 +13570,15 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
         e.style.filter = "alpha(opacity=" + 100 * a + ")";
         k.style.filter = "alpha(opacity=" + 100 * a + ")"
     };
-    this.panToCenter =
-        function() {
-            if (!1 == p.disableAutoPan && n && m) {
-                var a = n.FromMapPoint(p.position.x, p.position.y),
-                    b = parseInt(a.x) - e.offsetWidth / 2,
-                    a = parseInt(a.y) - e.offsetHeight / 2;
-                n.ToMapPoint(b, a);
-                m.setCenter(p.position)
-            }
-        };
+    this.panToCenter = function() {
+        if (!1 == p.disableAutoPan && n && m) {
+            var a = n.FromMapPoint(p.position.x, p.position.y),
+                b = parseInt(a.x) - e.offsetWidth / 2,
+                a = parseInt(a.y) - e.offsetHeight / 2;
+            n.ToMapPoint(b, a);
+            m.setCenter(p.position)
+        }
+    };
     this.setMessageText = function(a) {
         this.setContent(a)
     };
@@ -13602,30 +13601,11 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
             if( h.movable ){
                 e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
                 e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
-                k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
-                k.style.top = parseInt(e.style.top) + 5 + "px"
+                // k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
+                // k.style.top = parseInt(e.style.top) + 5 + "px"
             }
         }
     };
-    this.anchor = function(){
-        if ("undefined" != typeof n && m) {
-            switch (m.getCoordSys()) {
-                case TGOS.TGCoordSys.EPSG3857:
-                    var a = TGOS.WGS84ToGoo(p.position.x, p.position.y),
-                        a = n.FromMapPoint(a.x, a.y);
-                    break;
-                case TGOS.TGCoordSys.EPSG3826:
-                    a = n.FromMapPoint(p.position.x, p.position.y);
-                    break;
-                case TGOS.TGCoordSys.EPSG3825:
-                    a = n.FromMapPoint(p.position.x, p.position.y)
-            }
-            e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
-            e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
-            k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
-            k.style.top = parseInt(e.style.top) + 5 + "px"
-        }
-    }
 
     this.setContent(a);
     this.setOptions({

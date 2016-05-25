@@ -10,14 +10,15 @@
 	overflow: auto;
 }
 
-.hpack .info-close {
+.hpack .info-window .info-close {
 	position: absolute;
+	display: inline-block;
 	top: 0.5em;
 	right: 0.5em;
 	width: 1em;
 	height: 1em;
 	overflow: auto;
-	z-index: 1E6;
+	z-index: 10000;;
 }
 
 .hpack .info-window div {
