@@ -88,30 +88,14 @@ var markEventBinder = function(id, mark, caller) {
 
 	function inSiteCCTV(){
 		caller.open(pMap);
-		var box = $(caller.getElement());
-		box.css("height", "255px");
-		box.next().hide();
-		box.find("p").css("margin", "0.5em 0 2em 0.5em");
-		box.find("p > span").css("position", "absolute")
-							.css("left", "1em")
-							.css("bottom", "0em")
-							.css("color", "rgba(180, 0, 0, 0.8)");
-							// .css("text-shadow", "1px 1px 5px black");
-		if( cctv_obj.isPause )
-			cctv_obj.resume();
-		else {
-			cctv_obj.play();
-
-			//Because TGOS is sucks, so I have to implement this function myself. WTF.
-			var close_bottom = box.next().next();
-			close_bottom.click(function() {
-				cctv_obj.pause();
-			})
-		}
+		$(".info-window").draggable();
+		caller.after_close = function(){ cctv_obj.pause() }
+		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
 	}
 
 	function linkOfCCTV(){
 		caller.open(pMap);
+		$(".info-window").draggable();
 		var box = $(caller.getElement());
 		box.next().hide();
 		box.height("1em");

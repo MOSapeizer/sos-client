@@ -13496,33 +13496,15 @@ TGOS.TGLabel = function(a) {
 };
 TGOS.extend(TGOS.Graphic, TGOS.TGLabel);
 TGOS.RegisterEvent(TGOS.TGLabel, "zindex_changed click dblclick rightclick mousemove mousedown mouseup mouseover mouseout".split(" "));
-TGOS.TGInfoWindow = function(a, d, b) {
+TGOS.TGInfoWindow = function(a, d, b, id=null) {
     var f = "",
-        e, g, k, l, h = this,
+        e, g, k, h = this,
         m, n;
-    l = document.createElement("img");
     e = document.createElement("div");
     g = document.createElement("div");
     k = document.createElement("div");
-    document.createElement("div");
-    l.src = TGOS.RES_PATH + "Sample/Angle.png";
-    l.style.position = "absolute";
-    l.style.height = "21px";
-    l.style.width = "34px";
-    l.style.zIndex = 1E6;
-    e.style.position = "absolute";
-    e.style.border = "solid 1px #AAAAAA";
-    e.style.backgroundColor = "#ffffff";
-    e.style.opacity = 1;
-    e.style.borderRadius = "5px";
-    e.style.overflow =
-        "auto";
-    g.style.width = "auto";
-    g.style.height = "auto";
-    g.style.position = "absolute";
-    g.style.overflow = "auto";
-    g.style.margin = "10px";
-    g.style["word-break"] = "keep-all";
+    e.className = "info-window"
+    k.className = "info-close"
     k.style.position = "absolute";
     k.top = "5px";
     k.style.width = "15px";
@@ -13547,18 +13529,16 @@ TGOS.TGInfoWindow = function(a, d, b) {
         return e
     };
     this.open = function(a) {
-        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), a.getHPack().appendChild(l), a.getHPack().appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<p style="white-space: nowrap">' + f + "</p>", e.style.width = g.scrollWidth + 40 > p.maxWidth ? p.maxWidth + 40 + "px" : g.scrollWidth + 40 + "px", l.style.display = "inline", k.style.display =
-            "inline", e.style.height = g.scrollHeight + 30 + "px", this.update(), this.panToCenter())
+        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), a.getHPack().appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.update(), this.panToCenter())
     };
-    this.close = function() {
-        m && m.infoWindowLayer.containing(this) && (m.infoWindowLayer.remove(this), l.style.display = "none", k.style.display = "none")
+    this.after_close = function(){ };
+    this.close = function(fn=null) {
+        m && m.infoWindowLayer.containing(this) && (m.infoWindowLayer.remove(this), k.style.display = "none") && h.after_close()
     };
     this.setContent = function(a) {
         "string" == typeof a ? f = a : a instanceof HTMLElement && g.appendChild(a);
         f = a;
-        g.innerHTML = '<p style="white-space: nowrap">' + f + "</p>";
-        e.style.width = g.scrollWidth + 40 > p.maxWidth ? p.maxWidth + 40 + "px" : g.scrollWidth + 40 + "px";
-        e.style.height = g.scrollHeight + 30 + "px";
+        g.innerHTML = '<div class="info-description">' + f + "</div>";
         TGOS.TGEvent.trigger(this,
             "content_changed")
     };
@@ -13573,12 +13553,10 @@ TGOS.TGInfoWindow = function(a, d, b) {
     };
     this.setMaxWidth = function(a) {
         p.maxWidth = a;
-        e.style.width = g.scrollWidth + 40 > p.maxWidth ? p.maxWidth + 40 + "px" : g.scrollWidth + 40 + "px";
-        e.style.height = g.scrollHeight + 30 + "px"
     };
     this.setZIndex = function(a) {
         a !== p.zIndex && (p.zIndex = a, e.style.zIndex =
-            a, l.style.zIndex = a, k.style.zIndex = a, this.update(), TGOS.TGEvent.trigger(this, "zindex_changed"))
+            a, k.style.zIndex = a, this.update(), TGOS.TGEvent.trigger(this, "zindex_changed"))
     };
     this.getZIndex = function() {
         return p.zIndex
@@ -13592,10 +13570,8 @@ TGOS.TGInfoWindow = function(a, d, b) {
     };
     this.putOpacity = function(a) {
         e.style.opacity = a;
-        l.style.opacity = a;
         k.style.opacity = a;
         e.style.filter = "alpha(opacity=" + 100 * a + ")";
-        l.style.filter = "alpha(opacity=" + 100 * a + ")";
         k.style.filter = "alpha(opacity=" + 100 * a + ")"
     };
     this.panToCenter =
@@ -13629,8 +13605,6 @@ TGOS.TGInfoWindow = function(a, d, b) {
             }
             e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
             e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
-            l.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
-            l.style.top = parseInt(a.y) - 19 + p.pixelOffset.height + "px";
             k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
             k.style.top = parseInt(e.style.top) + 5 + "px"
         }
@@ -13639,7 +13613,8 @@ TGOS.TGInfoWindow = function(a, d, b) {
     this.setOptions({
         position: d
     });
-    this.setOptions(b)
+    this.setOptions(b);
+    console.log(this);
 };
 TGOS.RegisterEvent(TGOS.TGLabel, ["closeclick", "content_changed", "position_changed", "zindex_changed", "domready"]);
 TGOS.TGImage = function(a, d, b, f, e) {

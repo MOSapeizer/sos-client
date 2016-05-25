@@ -1,5 +1,4 @@
 $(function() {
-
 	$(".hide-control-button").click( hide_button );
 	$(".show-control-button").click( show_button );
 	$("#hide-info-button").click( hide_info );

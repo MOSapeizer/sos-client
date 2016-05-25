@@ -44,7 +44,6 @@ var CCTVObject = function(station_id, ccd_id){
 		// update images array
 		initImagseGroup.bind(this);
 		setInterval( this.updateImages.bind(this), 4000);
-
 		// cctv show
 		setInterval( this.updateCCTV.bind(this), 1000);
 	};
