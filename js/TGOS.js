@@ -13505,13 +13505,6 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     k = document.createElement("div");
     e.className = "info-window"
     k.className = "info-close"
-    k.style.position = "absolute";
-    k.top = "5px";
-    k.style.width = "15px";
-    k.style.height = "15px";
-    k.style.overflow = "auto";
-    k.style.right = "5px";
-    k.style.zIndex = 1E6;
     k.style.backgroundImage = 'url("' + TGOS.RES_PATH + 'Sample/Close.png")';
     this.onCloseClick = function(a) {
         h.close()
@@ -13525,11 +13518,14 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
         zIndex: 1E6,
         disableAutoPan: !0
     };
+
+    this.movable = true;
+
     this.getElement = function() {
         return e
     };
     this.open = function(a) {
-        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), a.getHPack().appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.update(), this.panToCenter())
+        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), a.getHPack().appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.anchor(), this.panToCenter())
     };
     this.after_close = function(){ };
     this.close = function(fn=null) {
@@ -13603,12 +13599,34 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
                 case TGOS.TGCoordSys.EPSG3825:
                     a = n.FromMapPoint(p.position.x, p.position.y)
             }
+            if( h.movable ){
+                e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
+                e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
+                k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
+                k.style.top = parseInt(e.style.top) + 5 + "px"
+            }
+        }
+    };
+    this.anchor = function(){
+        if ("undefined" != typeof n && m) {
+            switch (m.getCoordSys()) {
+                case TGOS.TGCoordSys.EPSG3857:
+                    var a = TGOS.WGS84ToGoo(p.position.x, p.position.y),
+                        a = n.FromMapPoint(a.x, a.y);
+                    break;
+                case TGOS.TGCoordSys.EPSG3826:
+                    a = n.FromMapPoint(p.position.x, p.position.y);
+                    break;
+                case TGOS.TGCoordSys.EPSG3825:
+                    a = n.FromMapPoint(p.position.x, p.position.y)
+            }
             e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
             e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
             k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
             k.style.top = parseInt(e.style.top) + 5 + "px"
         }
-    };
+    }
+
     this.setContent(a);
     this.setOptions({
         position: d

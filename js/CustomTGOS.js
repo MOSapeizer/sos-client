@@ -88,14 +88,14 @@ var markEventBinder = function(id, mark, caller) {
 
 	function inSiteCCTV(){
 		caller.open(pMap);
-		$(".info-window").draggable();
+		$(".info-window").draggable({ start: function(){ caller.movable = false; } });
 		caller.after_close = function(){ cctv_obj.pause() }
 		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
 	}
 
 	function linkOfCCTV(){
 		caller.open(pMap);
-		$(".info-window").draggable();
+		$(".info-window").draggable({ start: function(){ caller.movable = false; } });
 		var box = $(caller.getElement());
 		box.next().hide();
 		box.height("1em");
