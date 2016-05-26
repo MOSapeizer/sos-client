@@ -7,14 +7,11 @@ var myTimer = function() {
 }
 
 var show_cctv = function(id, timestamp){
-	return '<img id="' + id + '" src="image/CCTV.png" width="200" height="200" alt="">'
-		   + "<span>" + timestamp + "<span> ";
-}
-
-var update_cctv = function(id, index, timestamp){
-	$("#" + id).attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index );
-	$("#" + id).nextAll().filter("span").text( timestamp );
-	// $("#" + id).nextAll().filter("button").text( "放大" );
+	return '<img id="' + id + '" src="" alt="">'
+		   + '<div class="info-control"> ' 
+		   + ' 	<span></span>' 
+		   +'	<button class="back-button"></button>' 
+		   + '</div>';
 }
 
 var cctv = function(station_id, ccd_id){
@@ -43,6 +40,7 @@ var CCTVObject = function(station_id, ccd_id){
 	this.images = [];
 	this.times = [];
 	this.isPause = false;
+	this.info_window = null;
 	this.play = function(){
 		initImagseGroup();
 
@@ -69,6 +67,14 @@ var CCTVObject = function(station_id, ccd_id){
 			image = instance.images[instance.index++];
 			update_cctv( instance.station_id, image, timestamp );
 		}
+	}
+
+	var update_cctv = function(id, index, timestamp){
+		var info_window = instance.info_window;
+		info_window.find(".info-cover").fadeOut();
+		info_window.find("#" + id).attr("src", "http://dfm.swcb.gov.tw/debrisFinal/show.asp?PK=" + index );
+		info_window.find(".info-control span").text( timestamp );
+		// $("#" + id).nextAll().filter("button").text( "放大" );
 	}
 
 	var initImagseGroup = function(){

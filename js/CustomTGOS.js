@@ -1,5 +1,5 @@
 var messageBoxArray = [];
-var markerArrary = [];
+var markerHash = { cctv: {} };
 
 var pinIcon = L.icon({
     iconUrl: 'https://cdn2.iconfinder.com/data/icons/iconslandgps/PNG/256x256/Pinpoints/NeedleLeftYellow.png',
@@ -51,10 +51,10 @@ var loadMap = function() {
 var scrollbutton = function(){
 	var bar = $("#pLevelBarBar");
 	bar.find("img[src='http://api.tgos.nat.gov.tw/TGOS_API/images//bar_head.png']")
-	   .attr("src", "image/plus.png");
+	   .attr("src", "images/plus.png");
 
 	bar.find("img[src='http://api.tgos.nat.gov.tw/TGOS_API/images//bar_bottom.png']")
-	   .attr("src", "image/minus.png")
+	   .attr("src", "images/minus.png")
 
 	bar.find("td").css("padding", "0px");
 	bar.find("img").css("width", "3em");
@@ -68,19 +68,37 @@ var addCctvMarker = function(){
 	var observation = this.observations[0];
 	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/) || [];
 	var cctv_box = createMessageBox( observation, location, cctv_id );
-	var cctv_mark = addCameraMarker(observation, location);
+	var cctv_marker = addCameraMarker(observation, location);
 
-	markEventBinder( cctv_id, cctv_mark, cctv_box );
+	markEventBinder( cctv_id, cctv_marker, cctv_box );
 	messageBoxArray.push( cctv_box );
-	markerArrary.push( cctv_mark );
+	markerHash["cctv"][cctv_id[1]] = cctv_marker;
 	
 }
 
 var markEventBinder = function(id, mark, caller) {
 	if( id != null ) {
 		var cctv_obj = new CCTVObject(id[1], id[2]);
+		cctv_obj.info_window = $(caller.getElement());
+		cctv_obj.info_window.draggable();
+		cctv_obj.content = $(caller.getContentPane());
+		cctv_obj.info_window.on("mousedown", function(){
+			caller.movable = false;
+			cctv_obj.info_window.css('user-select','none').prop('unselectable','on').on('selectstart',false);
+			cctv_obj.info_window.draggable("enable");
+			cctv_obj.content.find(".back-button").click(function(){ 
+			cctv_obj.info_window.animate({
+					left: caller.originX,
+					top: caller.originY
+				}, 200, function(){
+					cctv_obj.info_window.draggable( "disable" );
+					caller.movable = true;
+				});
+			});
+		});
 		CCTVObjectGroup.push( cctv_obj );
 		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV );
+
 	}
 	else {
 		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV );
@@ -88,18 +106,16 @@ var markEventBinder = function(id, mark, caller) {
 
 	function inSiteCCTV(){
 		caller.open(pMap);
-		$(".info-window").draggable({ start: function(){ caller.movable = false; } });
-		caller.after_close = function(){ cctv_obj.pause(); console.log("fuck", this) }
+		var info_window = $( caller.getElement() );
+		$(caller.getContentPane()).find(".info-cover").fadeIn();
+		caller.after_close = function(){ cctv_obj.pause(); caller.movable = true }
 		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
 	}
 
 	function linkOfCCTV(){
+		$(caller.getElement()).draggable( "destroy" );
 		caller.open(pMap);
-		$(".info-window").draggable({ start: function(){ caller.movable = false; } });
-		var box = $(caller.getElement());
-		box.next().hide();
-		box.height("1em");
-		box.find("div").css("height", "1.5em");
+		// $(".info-window").draggable({ start: function(){ caller.movable = false; } });
 	}
 }
 
@@ -122,27 +138,27 @@ var MessageOptionsFactory = function(options){
 
 var messageBoxFactory = function( option ){ 
 
-	var message = '<a href="' + option.result + '">' + option.name + '</a>';
+	var message = '<a class="link" target="_blank" href="' + option.result + '">' + option.name + '</a>';
 
 	if( option.type != "live-html" )
-		return messageBoxInstance( show_cctv(option.type, "2016-05-06 00:00:00"), option.location );
+		return messageBoxInstance( show_cctv(option.type, "2016-05-06 00:00:00"), option.location, "cctv" );
 	
-	return messageBoxInstance( message, option.location );
+	return messageBoxInstance( message, option.location, "live-html" );
 }
 
-var messageBoxInstance = function( message, location ){
+var messageBoxInstance = function( message, location, type ){
 	var InfoWindowOptions = { maxWidth: 200,
 							  pixelOffset: new TGOS.TGSize(-60, 0),
 							  zIndex: 0 };
   	var mBox = new TGOS.TGInfoWindow( message
   			   , new TGOS.TGPoint(location[0], location[1])
-  			   , InfoWindowOptions);
+  			   , InfoWindowOptions, type);
   	return mBox
 }
 
 var addCameraMarker = function(observation, location){
 	var markerPoint = new TGOS.TGPoint(location[0], location[1]);
-	var markerImg = new TGOS.TGImage("./image/Camera-marker.png",
+	var markerImg = new TGOS.TGImage("./images/Camera-marker.png",
 	                new TGOS.TGSize(32, 40), new TGOS.TGPoint(0, 0), new TGOS.TGPoint(0, 16));
 	return new TGOS.TGMarker(pMap, markerPoint, observation.feature, markerImg);
 }

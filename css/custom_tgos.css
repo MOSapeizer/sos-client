@@ -4,10 +4,30 @@
 	width: 20em;
 	height: 20em;
 	position: absolute;
-	background-color: rgba(255, 255, 255, 1);
 	opacity: 1;
 	border-radius: 5px;
 	overflow: auto;
+}
+
+.hpack .live-html {
+	box-sizing: border-box;
+	width: 18em;
+	height: 4em;
+	position: absolute;
+	bottom: 1em;
+	opacity: 1;
+	border-radius: 5px;
+	overflow: auto;
+}
+
+.hpack .info-window .info-cover {
+	background-image: url(../images/CCTV.png);
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+.hpack .live-html .info-cover {
+	background: none;
 }
 
 .hpack .info-window .info-close {
@@ -21,9 +41,19 @@
 	z-index: 10000;;
 }
 
+.hpack .live-html .info-close {
+	top: 0.75em;
+	right: 0.75em;
+}
+
 .hpack .info-window div {
 	width: 100%;
 	height: 100%;
+}
+
+.hpack .live-html div {
+	width: auto;
+	height: auto;
 }
 
 .hpack .info-description img {
@@ -36,9 +66,52 @@
 	/*text-align: center;*/
 }
 
-.hpack .info-description span {
-	color: rgba( 200, 0, 0, 0.7 );
+.hpack .info-description .info-control {
+	position: absolute;
+	padding: 0 1em;
+	height: 2em;
+	border-radius: 0 0 0.5em 0.5em ;
+	background-color: rgba(255, 255, 255, 1);
 	display: block;
 	font-size: 1.25em;
-	padding: 0.375em;
+}
+
+.hpack .info-control span {
+	display: inline-block;
+	padding: 0.25em 0;
+	color: rgba( 200, 0, 0, 0.7 );
+}
+
+.hpack .info-window a.link {
+	position: absolute;
+	font-size: 1.3em;
+	width: 14em;
+	height: auto;
+	text-align: center;
+	padding: 0.5em 0.25em; 
+	bottom: 0.25em;
+	background: white;
+}
+
+.hpack .info-control .unactive {
+	display: none;
+}
+
+.hpack .info-control .back-button {
+	float: right;
+	background-color: rgba(0, 0, 0, 0);
+	background-image: url(../images/left-arrow-icon-93018.png);
+	background-size: 1.75em;
+	margin-top: 0.125em;
+	width: 1.75em;
+	height: 1.75em;
+	border: none;
+	outline: none;
+	text-decoration-style: none;
+	border-radius: 100%;
+	/*background: none;*/
+}
+
+.hpack .info-control .back-button:active {
+	background-color: rgba(0, 0, 0, 0.1);
 }

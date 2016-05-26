@@ -13496,15 +13496,17 @@ TGOS.TGLabel = function(a) {
 };
 TGOS.extend(TGOS.Graphic, TGOS.TGLabel);
 TGOS.RegisterEvent(TGOS.TGLabel, "zindex_changed click dblclick rightclick mousemove mousedown mouseup mouseover mouseout".split(" "));
-TGOS.TGInfoWindow = function(a, d, b, id=null) {
+TGOS.TGInfoWindow = function(a, d, b, externClass=null) {
     var f = "",
-        e, g, k, h = this,
+        e, g, k, loadingPage, h = this,
         m, n;
     e = document.createElement("div");
     g = document.createElement("div");
     k = document.createElement("div");
-    e.className = "info-window"
-    k.className = "info-close"
+    loadingPage = document.createElement("div");
+    e.className = "info-window";
+    externClass && (e.className += " " + externClass);
+    k.className = "info-close";
     k.style.backgroundImage = 'url("' + TGOS.RES_PATH + 'Sample/Close.png")';
     this.onCloseClick = function(a) {
         h.close()
@@ -13525,9 +13527,12 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     this.getElement = function() {
         return e
     };
+
+    this.openJoin = function(f){
+        return '<div class="info-cover"></div><div class="info-description">' + f + "</div>";
+    }
     this.open = function(a) {
-        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), e.appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.update(), this.panToCenter())
-        console.log("done");
+        a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), e.appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = h.openJoin(f), this.update(), this.panToCenter())
     };
     this.after_close = function(){ };
     this.close = function() {
@@ -13536,7 +13541,7 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     this.setContent = function(a) {
         "string" == typeof a ? f = a : a instanceof HTMLElement && g.appendChild(a);
         f = a;
-        g.innerHTML = '<div class="info-description">' + f + "</div>";
+        g.innerHTML = h.openJoin(f);
         TGOS.TGEvent.trigger(this,
             "content_changed")
     };
@@ -13600,11 +13605,11 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
                 case TGOS.TGCoordSys.EPSG3825:
                     a = n.FromMapPoint(p.position.x, p.position.y)
             }
+            h.originX = parseInt(a.x) + p.pixelOffset.width + "px";
+            h.originY = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
             if( h.movable ){
                 e.style.left = parseInt(a.x) + p.pixelOffset.width + "px";
                 e.style.top = parseInt(a.y) - 19 - parseInt(e.offsetHeight) + p.pixelOffset.height + "px";
-                // k.style.left = parseInt(a.x) + e.clientWidth + p.pixelOffset.width - 20 + "px";
-                // k.style.top = parseInt(e.style.top) + 5 + "px"
             }
         }
     };
@@ -13614,21 +13619,28 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
         position: d
     });
     this.setOptions(b);
-    console.log(this);
 };
 TGOS.RegisterEvent(TGOS.TGLabel, ["closeclick", "content_changed", "position_changed", "zindex_changed", "domready"]);
-TGOS.TGImage = function(a, d, b, f, e) {
+TGOS.TGImage = function(a, d, b, f, e, id='') {
     var g = "";
+    var h = "";
     this.size = d instanceof TGOS.TGSize ? d : new TGOS.TGSize(32, 32);
     this.scaledSize = e instanceof TGOS.TGPoint ? e : new TGOS.TGSize(32, 32);
     this.anchor = f instanceof TGOS.TGPoint ? f : new TGOS.TGPoint(this.size.width / 2 - 1, this.size.height - 1);
     this.origin = b instanceof TGOS.TGPoint ? b : new TGOS.TGPoint(0, 0);
+    this.setId = function(a){
+        "string" == typeof a && (h = id)
+    };
+    this.getId = function(){
+        return h;
+    };
     this.setUrl = function(a) {
         "string" == typeof a && (g = a)
     };
     this.getUrl = function() {
         return g
     };
+    this.setId(id);
     this.setUrl(a)
 };
 TGOS.extend(TGOS.MVCObject, TGOS.TGImage);
@@ -13831,7 +13843,7 @@ TGOS.TGEvent = function() {
         f && (this.icon = f);
         e && (this.title = e);
         m && this.setMarkerOptions(m);
-        b && this.setMap(b)
+        b && this.setMap(b);
     };
     var f =
         TGOS.TGMarker;
@@ -13936,7 +13948,7 @@ TGOS.TGEvent = function() {
                         d.bindEvents();
                         d.update()
                     };
-                    b.src = this.icon.getUrl()
+                    b.src = this.icon.getUrl();
                 } else this.elem = a.image(this.icon.getUrl(), 0, 0, this.icon.size.width, this.icon.size.height), !1 === this.visible ? this.elem.hide() : this.elem.show(), null != this.cursor && this.elem.attr({
                         cursor: this.cursor
                     }),
@@ -14051,7 +14063,7 @@ TGOS.TGEvent = function() {
                 a = b.FromMapPoint(a.x, a.y);
                 if (this.icon instanceof TGOS.TGImage) this.elem.attr({
                     x: a.x - this.icon.anchor.x,
-                    y: a.y - this.icon.anchor.y
+                    y: a.y - this.icon.anchor.y,
                 });
                 else if (this.icon instanceof TGOS.TGSymbol) {
                     if (!this.bbox_) {
