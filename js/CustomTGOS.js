@@ -89,7 +89,7 @@ var markEventBinder = function(id, mark, caller) {
 	function inSiteCCTV(){
 		caller.open(pMap);
 		$(".info-window").draggable({ start: function(){ caller.movable = false; } });
-		caller.after_close = function(){ cctv_obj.pause() }
+		caller.after_close = function(){ cctv_obj.pause(); console.log("fuck", this) }
 		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
 	}
 

@@ -34,6 +34,9 @@ var cctv = function(station_id, ccd_id){
 }
 
 var CCTVObject = function(station_id, ccd_id){
+	var instance = this;
+	var IMAGES_QUEUE_UPDATE_PERIOD = 60000;
+	var IMAGES_CHANGE_PERIOD = 1000;
 	this.index = 0;
 	this.station_id = station_id;
 	this.ccd_id = ccd_id;
@@ -41,33 +44,34 @@ var CCTVObject = function(station_id, ccd_id){
 	this.times = [];
 	this.isPause = false;
 	this.play = function(){
+		initImagseGroup();
+
 		// update images array
-		initImagseGroup.bind(this);
-		setInterval( this.updateImages.bind(this), 4000);
+		setInterval( instance.updateImages, IMAGES_QUEUE_UPDATE_PERIOD);
+
 		// cctv show
-		setInterval( this.updateCCTV.bind(this), 1000);
+		setInterval( instance.updateCCTV, IMAGES_CHANGE_PERIOD);
 	};
 	this.pause = function(){
-		this.isPause = true;
+		instance.isPause = true;
 	};
 	this.resume = function(){
-		this.isPause = false;
+		instance.isPause = false;
 	};
 	this.updateImages = function(){
-		cctv.bind(this, this.station_id, this.ccd_id)();
+		cctv.call(instance, instance.station_id, instance.ccd_id);
 	};
 	this.updateCCTV = function(){ 
-		if(this.images.length > 0 && !this.isPause){
-			if( this.index >= this.images.length )
-				this.index = 0;
-			timestamp = this.times[this.index];
-			image = this.images[this.index++];
-			// console.log(this.station_id + ": " + this.index + " " + image + " of " + this.images);
-			update_cctv( this.station_id, image, timestamp );
+		if(instance.images.length > 0 && !instance.isPause){
+			if( instance.index >= instance.images.length )
+				instance.index = 0;
+			timestamp = instance.times[instance.index];
+			image = instance.images[instance.index++];
+			update_cctv( instance.station_id, image, timestamp );
 		}
 	}
 
 	var initImagseGroup = function(){
-		this.updateImages.bind(this)();
+		instance.updateImages();
 	}
 }

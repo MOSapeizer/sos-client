@@ -13508,6 +13508,7 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     k.style.backgroundImage = 'url("' + TGOS.RES_PATH + 'Sample/Close.png")';
     this.onCloseClick = function(a) {
         h.close()
+        h.after_close();
     };
     AttachEvent(k, "click", this.onCloseClick);
     e.appendChild(g);
@@ -13526,10 +13527,11 @@ TGOS.TGInfoWindow = function(a, d, b, id=null) {
     };
     this.open = function(a) {
         a.infoWindowLayer.containing(this) ? this.update() : (a.getHPack().appendChild(e), e.appendChild(k), a.infoWindowLayer.add(this), m = a, n = m.getMapBase(), e.style.zIndex = p.zIndex, g.innerHTML = '<div class="info-description">' + f + "</div>", this.update(), this.panToCenter())
+        console.log("done");
     };
     this.after_close = function(){ };
-    this.close = function(fn=null) {
-        m && m.infoWindowLayer.containing(this) && (m.infoWindowLayer.remove(this), k.style.display = "none") && h.after_close()
+    this.close = function() {
+        m && m.infoWindowLayer.containing(this) && (m.infoWindowLayer.remove(this))
     };
     this.setContent = function(a) {
         "string" == typeof a ? f = a : a instanceof HTMLElement && g.appendChild(a);
