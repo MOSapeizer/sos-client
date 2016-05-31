@@ -108,7 +108,7 @@ var markEventBinder = function(id, mark, caller) {
 	}
 
 	function linkOfCCTV(){
-		$(caller.getElement()).draggable( "destroy" );
+		// $(caller.getElement()).draggable( "destroy" );
 		caller.open(pMap);
 		// $(".info-window").draggable({ start: function(){ caller.movable = false; } });
 	}
