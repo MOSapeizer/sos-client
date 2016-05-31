@@ -67,18 +67,53 @@ var addCctvMarker = function(){
 	var location = this["feature"].location;
 	var observation = this.observations[0];
 	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/) || [];
-	var cctv_box = createMessageBox( observation, location, cctv_id );
-	var cctv_marker = addCameraMarker(observation, location);
 
+	if( is_in_cctv_group(cctv_id[1]) )
+		return null;
+
+	var cctv_box = createMessageBox( observation, location, cctv_id[1] );
+	var cctv_marker = addCameraMarker(observation, location);
 	markEventBinder( cctv_id, cctv_marker, cctv_box );
 	messageBoxArray.push( cctv_box );
 	markerHash["cctv"][cctv_id[1]] = cctv_marker;
 	
 }
 
+var is_in_cctv_group = function(id){
+	var match = false;
+	var match_id = function(cctv_obj){
+		(cctv_obj.station_id == id) && (not_match = true)
+	}
+	CCTVObjectGroup.forEach( match_id );
+	return match;
+}
+
 var markEventBinder = function(id, mark, caller) {
-	if( id != null ) {
+	if(  caller.type == "live-cctv" ) {
 		var cctv_obj = new CCTVObject(id[1], id[2]);
+		configure_cctv_obj(cctv_obj);
+		CCTVObjectGroup.push(cctv_obj);
+		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV );
+	}
+	else if(caller.type == 'live-html') {
+		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV );
+	}
+
+	function inSiteCCTV(){
+		caller.open(pMap);
+		var info_window = $( caller.getElement() );
+		$(caller.getContentPane()).find(".info-cover").fadeIn();
+		caller.after_close = function(){ cctv_obj.pause(); caller.movable = true }
+		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
+	}
+
+	function linkOfCCTV(){
+		$(caller.getElement()).draggable( "destroy" );
+		caller.open(pMap);
+		// $(".info-window").draggable({ start: function(){ caller.movable = false; } });
+	}
+
+	function configure_cctv_obj(cctv_obj){
 		cctv_obj.info_window = $(caller.getElement());
 		cctv_obj.info_window.draggable();
 		cctv_obj.content = $(caller.getContentPane());
@@ -96,40 +131,22 @@ var markEventBinder = function(id, mark, caller) {
 				});
 			});
 		});
-		CCTVObjectGroup.push( cctv_obj );
-		TGOS.TGEvent.addListener(mark, "click", inSiteCCTV );
-
-	}
-	else {
-		TGOS.TGEvent.addListener(mark, "click", linkOfCCTV );
-	}
-
-	function inSiteCCTV(){
-		caller.open(pMap);
-		var info_window = $( caller.getElement() );
-		$(caller.getContentPane()).find(".info-cover").fadeIn();
-		caller.after_close = function(){ cctv_obj.pause(); caller.movable = true }
-		cctv_obj.isPause ? cctv_obj.resume() : cctv_obj.play();
-	}
-
-	function linkOfCCTV(){
-		$(caller.getElement()).draggable( "destroy" );
-		caller.open(pMap);
-		// $(".info-window").draggable({ start: function(){ caller.movable = false; } });
+		return 
 	}
 }
 
-var createMessageBox = function( observation, location, cctv_id=[] ) {
-	var message_options = new MessageOptionsFactory( { name: observation.feature, 
-												   location: location, 
-												   result: observation.result } )
-
-	message_options["type"] = cctv_id[1] || "live-html";
+var createMessageBox = function( observation, location, cctv_id ) {
+	var message_options = new MessageOptionsFactory({ name: observation.feature, 
+												   	  location: location, 
+												   	  result: observation.result });
+	message_options["id"] = cctv_id;
+	message_options["type"] = cctv_id ? "live-cctv" : "live-html";
 	var cctv_box = messageBoxFactory( message_options );
 	return cctv_box;
 }
 
 var MessageOptionsFactory = function(options){ 
+	this.id = options.id || "";
 	this.type = options.type || "";
 	this.name = options.name || "";
 	this.location = options.location || [];
@@ -141,7 +158,7 @@ var messageBoxFactory = function( option ){
 	var message = '<a class="link" target="_blank" href="' + option.result + '">' + option.name + '</a>';
 
 	if( option.type != "live-html" )
-		return messageBoxInstance( show_cctv(option.type, "2016-05-06 00:00:00"), option.location, "cctv" );
+		return messageBoxInstance( show_cctv(option.id, "timestamp"), option.location, "live-cctv" );
 	
 	return messageBoxInstance( message, option.location, "live-html" );
 }
@@ -150,9 +167,8 @@ var messageBoxInstance = function( message, location, type ){
 	var InfoWindowOptions = { maxWidth: 200,
 							  pixelOffset: new TGOS.TGSize(-60, 0),
 							  zIndex: 0 };
-  	var mBox = new TGOS.TGInfoWindow( message
-  			   , new TGOS.TGPoint(location[0], location[1])
-  			   , InfoWindowOptions, type);
+  	var mBox = new TGOS.TGInfoWindow( message, new TGOS.TGPoint(location[0], location[1])
+  			   								 , InfoWindowOptions, type);
   	return mBox
 }
 

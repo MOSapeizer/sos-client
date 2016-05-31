@@ -13504,10 +13504,12 @@ TGOS.TGInfoWindow = function(a, d, b, externClass=null) {
     g = document.createElement("div");
     k = document.createElement("div");
     loadingPage = document.createElement("div");
+    // custom field for css and javascript decouple
     e.className = "info-window";
-    externClass && (e.className += " " + externClass);
     k.className = "info-close";
     k.style.backgroundImage = 'url("' + TGOS.RES_PATH + 'Sample/Close.png")';
+
+    externClass && (e.className += " " + externClass);
     this.onCloseClick = function(a) {
         h.close()
         h.after_close();
@@ -13521,7 +13523,8 @@ TGOS.TGInfoWindow = function(a, d, b, externClass=null) {
         zIndex: 1E6,
         disableAutoPan: !0
     };
-
+    //For additional type;
+    this.type = externClass || "none";
     this.movable = true;
 
     this.getElement = function() {
@@ -13613,7 +13616,6 @@ TGOS.TGInfoWindow = function(a, d, b, externClass=null) {
             }
         }
     };
-
     this.setContent(a);
     this.setOptions({
         position: d
