@@ -61,10 +61,7 @@ var scrollbutton = function(){
 }
 
 var addCctvMarker = function(){
-	if( this["feature"].location === undefined ){
-		getOfferingLocation(this, this.observations[0].feature);
-	}
-	var location = this["feature"].location;
+	var location = this["features"][0];
 	var observation = this.observations[0];
 	var cctv_id = observation.result.match(/(?:StationID=)(\d{0,2})&CCDId=(\d)/) || [];
 
@@ -167,13 +164,13 @@ var messageBoxInstance = function( message, location, type ){
 	var InfoWindowOptions = { maxWidth: 200,
 							  pixelOffset: new TGOS.TGSize(-60, 0),
 							  zIndex: 0 };
-  	var mBox = new TGOS.TGInfoWindow( message, new TGOS.TGPoint(location[0], location[1])
+  	var mBox = new TGOS.TGInfoWindow( message, new TGOS.TGPoint(location.longitude, location.latitude)
   			   								 , InfoWindowOptions, type);
   	return mBox
 }
 
 var addCameraMarker = function(observation, location){
-	var markerPoint = new TGOS.TGPoint(location[0], location[1]);
+	var markerPoint = new TGOS.TGPoint(location.longitude, location.latitude);
 	var markerImg = new TGOS.TGImage("./images/Camera-marker.png",
 	                new TGOS.TGSize(32, 40), new TGOS.TGPoint(0, 0), new TGOS.TGPoint(0, 16));
 	return new TGOS.TGMarker(pMap, markerPoint, observation.feature, markerImg);

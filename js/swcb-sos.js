@@ -2,40 +2,22 @@
 var pMap = null;
 var readingArray = []; // this object stores the Reading objects (value) based on each FeatureOfInterest (key)
 var offeringGroup = [];
-var xml;
+var json;
 var hostname_regex = /localhost|127(?:\.[0-9]+){0,2}\.[0-9]+|mos\.csrsr\.ncu\.edu\.tw:8080/;
 var URL = [ "http://140.115.111.186:8080/swcb-sos-new/service", 
             "http://140.115.111.186:8080/epa-sos/service", 
-            "http://mos.csrsr.ncu.edu.tw:8080/swcb_cctv/service"]
+            "https://swcb-cctv.herokuapp.com/swcb"]
 
 var UrlForCapability = function( url ) {
-    var url_for_getCapability = url + "?service=SOS&request=GetCapabilities";
-    if( url.match( hostname_regex ) === null )
-        return UrlForGetYQL( url_for_getCapability );
-    return url_for_getCapability;
-}
-
-var UrlForObservation = function( url, body ) {
-    if( url.match( hostname_regex ) === null )
-        return UrlForPostYQL( url, body.replace(/[\t\n]/g, " ").replace(/\"/g), "'");
     return url;
 }
 
-var UrlForFeatrueOfInterest = function( url, body ){
-    return UrlForObservation(url, body);
+var UrlForObservation = function( url, offering ) {
+    return url + "/" + offering;
 }
 
-var UrlForGetYQL = function(url){
-    return "http://query.yahooapis.com/v1/public/yql?q=" 
-           + encodeURIComponent("select * from xml where url='" + url + "'")
-           + '&diagnostics=true&env=store://datatables.org/alltableswithkeys';
-}
-
-var UrlForPostYQL = function(url, body){
-    return "http://query.yahooapis.com/v1/public/yql?q="
-           + encodeURIComponent("select * from xmlpost where url='" + url + "' ")
-           + "and postdata=\"" + body + "\""
-           + '&diagnostics=true&env=store://datatables.org/alltableswithkeys';
+var UrlForFeatrueOfInterest = function( url, featureOfInterest ){
+    return UrlForObservation(url, featureOfInterest);
 }
 
 // A class called Reading
@@ -54,25 +36,7 @@ var request = function(){
     this.name = getValueById("offeringID");
     this.property = getValueById("property");
     this.range = [getValueById("startTime"), getValueById("endTime")];
-    this.output = getObservationXML(this.name, this.property, this.range);
-    this.getFeatureOfInterest = getFeatureOfInterest;
 }
-
-var Offering = function(request){
-    this.name = request.url;
-    this.request = request;
-    this.observations = [];
-    this.feature = {};
-    this.callback;
-}
-
-var Observation = function(xml){
-    this.phenomenonTime = xml.find("timePosition").text();
-    this.feature = xml.find("featureOfInterest").attr("xlink:href");
-    this.result = xml.find("result").text();
-    this.xml = xml;
-}
-
 
 function getcapabilities(index) {
 	var xmlhttp;
@@ -97,14 +61,14 @@ var xmlParser = function(response){
     return $(xmlDoc);
 }
 
-var optionFactory = function(){
-    return '<option value=' + $(this).text() + '>' + $(this).text() + '</option>'
+var optionFactory = function(data){
+    return '<option value="' + data + '">' + data + '</option>'
 }
 
 var update = function(name, array){
     tag = $("#" + name).empty();
     option_offerings = array.map( optionFactory );
-    option_offerings.each( function(index, value){
+    option_offerings.forEach( function(value){
         tag.append( value ); 
     });
 }
@@ -113,31 +77,17 @@ var getSelectedValue = function(name){
     return $("#" + name).children().first().text();
 }
 
-var parseCapabilities = function(xmlString) {
-    xml = xmlParser( xmlString );
-    var offering = xml.find("Operation[name='GetObservation']")
-                  .find("Parameter[name='offering']")
-                  .find("Value");;
-
+var parseCapabilities = function(jsonString) {
+    json = JSON.parse( jsonString );
+    var offering = [];
+    var map_offering = function(obj){ 
+        offeringGroup.push(obj);
+        offering.push(obj.identify) 
+    };
+    json.forEach(map_offering);
     update("offeringID", offering);
     offering_name = getSelectedValue("offeringID");
     ChangeOfferingInfo( offering_name );
-}
-
-var show = function(tag){
-    $("." + tag).css("display", "block");
-}
-
-var hide = function(tag){
-    $("." + tag).css("display", "none");
-}
-
-function groupPosition(offering) {
-    begin = offering.find("beginPosition").text();
-    end = offering.find("endPosition").text();
-    if( begin != "" && end != "")
-        return [begin, end];
-    return [];
 }
 
 var getValueById = function(name){
@@ -146,77 +96,38 @@ var getValueById = function(name){
 
 var doGetObservation = function() {
     var packet = new request();
-    var offering = new Offering(packet);
-    var url = UrlForObservation( packet.url, packet.output );
+    var url = UrlForObservation( packet.url, packet.name );
     var data = "";
 
-    // for not YQL, we need to put POST data in ajax;
-    if( url == packet.url )
-        data = packet.output;
-
-    xmlRequest(url, data, handleResponse, {offering: offering, packet: packet})
+    xmlRequest(url, data, handleResponse, {name: packet.name});
 
 }
 
-var handleResponse = function(observation){
-    var packet = this["cache"].packet;
-    var offering = this["cache"].offering
-
-    // Make each observation as an Object
-    // and Collect into a Offering.
-    $(observation).each(function(index, element){
-        var observation  = new Observation( $(element) );
-        offering.observations.push( observation );
+var handleResponse = function(observations){
+    var offering_name = this["cache"].name;
+    var offering = $.grep(offeringGroup, function(offering){
+        return offering.identify == offering_name;
+    })[0];
+    offering["observations"] = [];
+    observations.forEach(function(observation){
+        offering["observations"].push( observation );
     });
 
-    offeringGroup.push( offering );
-
-    if( offering.name == URL[2] ) {
-        addCctvMarker.call( offering );
-
-    } else {
-        console.log(offering);
-    }
-}
-
-var getOfferingLocation = function(offering, feature){
-    if( offering["feature"].location === undefined ){
-        offering["request"].output = getFeatureOfInterest( feature ).replace(/[\t\n]/g, " ");
-        // console.log(offering["request"].output);
-        doGetFeatureOfInterest( offering );
-    }
-}
-
-var doGetFeatureOfInterest = function(offering){
-    var packet = offering.request;
-    var url = UrlForFeatrueOfInterest( packet.url, packet.output );
-    var data = "";
-
-    // for not YQL, we need to put POST data in ajax;
-    if( url == packet.url )
-        data = packet.output;
-
-    xmlRequest(url, data, addFeatureLoaction, {offering: offering}, false);
-
+    //there can handle how offering will work when click 
+    // get Observation button;
+    addCctvMarker.call( offering );
 }
 
 var xmlRequest = function(url, data, callback, cache={}, async=true){
     var xmlRequest = $.ajax({
         url: url,
-        type: 'POST',
-        contentType: 'text/xml',
+        type: 'Get',
         async: async,
         data: data,
-        dataType: 'xml',
+        dataType: 'json',
         success: callback,
         cache: cache
     });
-}
-
-var addFeatureLoaction = function(featureOfInterest){
-    var offering = this["cache"].offering;
-    var position = $(featureOfInterest).find("pos")
-    offering["feature"].location = parse_position( position.text() );
 }
 
 var parse_position = function(position){
