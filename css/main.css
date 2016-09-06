@@ -159,6 +159,11 @@ div .pos_fixed4 {
     overflow: hidden;
 }
 
+.info-wrap img {
+    width: 90;
+    height: auto;
+}
+
 .info-container {
     width: 90%;
     height: 90%;
